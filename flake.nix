@@ -49,12 +49,22 @@
                 mv output $out/
                 '';
             };
+          clean = pkgs.writeShellScriptBin "clean" ''
+            set -e
+            echo cleaning project...
+            rm -rf .spago .spago2nix output
+            echo removed .spago
+            echo removed .spago2nix
+            echo removed output
+            echo done.
+            '';
         in
           {
             packages = { inherit purescriptMarkdown; };
             defaultPackage = purescriptMarkdown;
             devShell = pkgs.mkShell {
-              buildInputs = with import easy-ps; [
+              buildInputs = with easy-ps; [
+                clean
                 psa
                 purescript-language-server
                 purs
