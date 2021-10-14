@@ -28,7 +28,8 @@ instance showBlock ∷ Show a ⇒ Show (Block a) where
   show (Blockquote bs) = "(Blockquote " <> show bs <> ")"
   show (Lst lt bss) = "(List " <> show lt <> " " <> show bss <> ")"
   show (CodeBlock ca s) = "(CodeBlock " <> show ca <> " " <> show s <> ")"
-  show (LinkReference l uri) = "(LinkReference " <> show l <> " " <> show uri <> ")"
+  show (LinkReference l uri) = "(LinkReference " <> show l <> " " <> show uri <>
+    ")"
   show Rule = "Rule"
 
 derive instance eqBlock ∷ Eq a ⇒ Eq (Block a)
@@ -53,7 +54,9 @@ data CodeBlockType
 
 instance showCodeBlockType ∷ Show CodeBlockType where
   show Indented = "Indented"
-  show (Fenced evaluated info) = "(Fenced " <> show evaluated <> " " <> show info <> ")"
+  show (Fenced evaluated info) = "(Fenced " <> show evaluated <> " "
+    <> show info
+    <> ")"
 
 derive instance eqCodeBlockType ∷ Eq CodeBlockType
 derive instance ordCodeBlockType ∷ Ord CodeBlockType

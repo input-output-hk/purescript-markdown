@@ -21,16 +21,17 @@ import Text.Markdown.SlamDown.Syntax as SD
 
 testDocument ∷ Either String (SD.SlamDownP String) → Effect Unit
 testDocument sd = do
-  let printed = SDPR.prettyPrintMd <$> sd
-      parsed = printed >>= SDP.parseMd
+  let
+    printed = SDPR.prettyPrintMd <$> sd
+    parsed = printed >>= SDP.parseMd
 
   C.log
     $ "Original: \n   "
-    <> show sd
-    <> "\nPrinted:\n   "
-    <> show printed
-    <> "\nParsed:\n   "
-    <> show parsed
+        <> show sd
+        <> "\nPrinted:\n   "
+        <> show printed
+        <> "\nParsed:\n   "
+        <> show parsed
   assertEqual { expected: parsed, actual: sd }
 
 failDocument ∷ Either String (SD.SlamDownP String) → Effect Unit
@@ -44,7 +45,8 @@ main = do
   testDocument $ SDP.parseMd "Paragraph with a [link](http://purescript.org)"
   testDocument $ SDP.parseMd "Paragraph with an ![image](image.png)"
   testDocument $ SDP.parseMd "Paragraph with some `embedded code`"
-  testDocument $ SDP.parseMd "Paragraph with some !`code which can be evaluated`"
+  testDocument $ SDP.parseMd
+    "Paragraph with some !`code which can be evaluated`"
   testDocument $ SDP.parseMd "Paragraph with _emphasis_"
   testDocument $ SDP.parseMd "Paragraph with _emphasis_ and __strong text__"
 
@@ -192,23 +194,28 @@ main = do
         Right
           $ un ID.Identity
           $ SDE.eval
-            { code: \_ _ → pure $ SD.stringValue "Evaluated code block!"
-            , textBox: \_ t →
-                case t of
-                  SD.PlainText _ → pure $ SD.PlainText $ pure "Evaluated plain text!"
-                  SD.Numeric _ → pure $ SD.Numeric $ pure $ HN.fromNumber 42.0
-                  SD.Date _ → pure $ SD.Date $ pure $ unsafeDate 1992 7 30
-                  SD.Time (prec@SD.Minutes) _ → pure $ SD.Time prec $ pure $ unsafeTime 4 52 0
-                  SD.Time (prec@SD.Seconds) _ → pure $ SD.Time prec $ pure $ unsafeTime 4 52 10
-                  SD.DateTime (prec@SD.Minutes) _ →
-                    pure $ SD.DateTime prec $ pure $
-                      DT.DateTime (unsafeDate 1992 7 30) (unsafeTime 4 52 0)
-                  SD.DateTime (prec@SD.Seconds) _ →
-                    pure $ SD.DateTime prec $ pure $
-                      DT.DateTime (unsafeDate 1992 7 30) (unsafeTime 4 52 10)
-            , value: \_ _ → pure $ SD.stringValue "Evaluated value!"
-            , list: \_ _ → pure $ L.singleton $ SD.stringValue "Evaluated list!"
-            }  sd
+              { code: \_ _ → pure $ SD.stringValue "Evaluated code block!"
+              , textBox: \_ t →
+                  case t of
+                    SD.PlainText _ → pure $ SD.PlainText $ pure
+                      "Evaluated plain text!"
+                    SD.Numeric _ → pure $ SD.Numeric $ pure $ HN.fromNumber 42.0
+                    SD.Date _ → pure $ SD.Date $ pure $ unsafeDate 1992 7 30
+                    SD.Time (prec@SD.Minutes) _ → pure $ SD.Time prec $ pure $
+                      unsafeTime 4 52 0
+                    SD.Time (prec@SD.Seconds) _ → pure $ SD.Time prec $ pure $
+                      unsafeTime 4 52 10
+                    SD.DateTime (prec@SD.Minutes) _ →
+                      pure $ SD.DateTime prec $ pure $
+                        DT.DateTime (unsafeDate 1992 7 30) (unsafeTime 4 52 0)
+                    SD.DateTime (prec@SD.Seconds) _ →
+                      pure $ SD.DateTime prec $ pure $
+                        DT.DateTime (unsafeDate 1992 7 30) (unsafeTime 4 52 10)
+              , value: \_ _ → pure $ SD.stringValue "Evaluated value!"
+              , list: \_ _ → pure $ L.singleton $ SD.stringValue
+                  "Evaluated list!"
+              }
+              sd
       a → a
 
   testDocument $ SDP.parseMd "name = __ (Phil Freeman)"
@@ -243,7 +250,12 @@ main = do
   C.log "All static tests passed!"
 
 unsafeDate ∷ Int → Int → Int → DT.Date
-unsafeDate y m d = unsafePartial $ M.fromJust $ join $ DT.exactDate <$> toEnum y <*> toEnum m <*> toEnum d
+unsafeDate y m d = unsafePartial $ M.fromJust $ join $ DT.exactDate <$> toEnum y
+  <*> toEnum m
+  <*> toEnum d
 
 unsafeTime ∷ Int → Int → Int → DT.Time
-unsafeTime h m s = unsafePartial $ M.fromJust $ DT.Time <$> toEnum h <*> toEnum m <*> toEnum s <*> toEnum bottom
+unsafeTime h m s = unsafePartial $ M.fromJust $ DT.Time <$> toEnum h
+  <*> toEnum m
+  <*> toEnum s
+  <*> toEnum bottom

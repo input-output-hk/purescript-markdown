@@ -11,7 +11,16 @@ import Data.Foldable (any, all)
 import Data.List ((:))
 import Data.List as L
 import Data.Maybe as M
-import Data.String (Pattern(..), Replacement(..), drop, length, replace, split, take, trim) as S
+import Data.String
+  ( Pattern(..)
+  , Replacement(..)
+  , drop
+  , length
+  , replace
+  , split
+  , take
+  , trim
+  ) as S
 import Data.String.CodeUnits (countPrefix, dropWhile, singleton) as S
 import Data.String.Regex as RGX
 import Data.String.Regex.Unsafe as URX
@@ -39,7 +48,7 @@ data Container a
 
 isSpace ∷ String → Boolean
 isSpace " " = true
-isSpace _  = false
+isSpace _ = false
 
 isDigit ∷ String → Boolean
 isDigit "0" = true
@@ -59,14 +68,16 @@ allChars p = all p <<< S.split (S.Pattern "")
 
 removeNonIndentingSpaces ∷ String → String
 removeNonIndentingSpaces s
-  | S.countPrefix (isSpace <<< S.singleton) s < 4 = S.dropWhile (isSpace <<< S.singleton) s
+  | S.countPrefix (isSpace <<< S.singleton) s < 4 = S.dropWhile
+      (isSpace <<< S.singleton)
+      s
   | otherwise = s
 
 isRuleChar ∷ String → Boolean
 isRuleChar "*" = true
 isRuleChar "-" = true
 isRuleChar "_" = true
-isRuleChar _   = false
+isRuleChar _ = false
 
 isRule ∷ String → Boolean
 isRule s =
@@ -95,18 +106,22 @@ splitATXHeader s =
 -- Takes the last parsed container as an argument
 -- to avoid parsing a rule as a header
 isSetextHeader ∷ ∀ a. String → M.Maybe (Container a) → Boolean
-isSetextHeader s (M.Just (CText _)) = S.length s >= 1 && any (\c → allChars ((==) c) s) ["=", "-"]
+isSetextHeader s (M.Just (CText _)) = S.length s >= 1 && any
+  (\c → allChars ((==) c) s)
+  [ "=", "-" ]
 isSetextHeader _ _ = false
 
 setextLevel ∷ String → Int
 setextLevel s
   | S.take 1 s == "=" = 1
-  | otherwise         = 2
+  | otherwise = 2
 
 isBlockquoteLine ∷ String → Boolean
 isBlockquoteLine s = S.take 1 (removeNonIndentingSpaces s) == ">"
 
-splitBlockquote ∷ L.List String → { blockquoteLines ∷ L.List String , otherLines ∷ L.List String }
+splitBlockquote
+  ∷ L.List String
+  → { blockquoteLines ∷ L.List String, otherLines ∷ L.List String }
 splitBlockquote ss =
   let
     sp = L.span isBlockquoteLine ss
@@ -125,7 +140,7 @@ countLeadingSpaces = S.countPrefix (isSpace <<< S.singleton)
 isBulleted ∷ String → Boolean
 isBulleted s =
   let
-    b  = S.take 1 s
+    b = S.take 1 s
     ls = countLeadingSpaces (S.drop 1 s)
   in
     isBullet b && ls > 0 && ls < 5
@@ -134,7 +149,7 @@ isBulleted s =
   isBullet "*" = true
   isBullet "+" = true
   isBullet "-" = true
-  isBullet _   = false
+  isBullet _ = false
 
 isOrderedListMarker ∷ String → Boolean
 isOrderedListMarker s =
@@ -149,20 +164,26 @@ listItemType ∷ String → SD.ListType
 listItemType s
   | isBulleted s = SD.Bullet (S.take 1 s)
   | otherwise =
-      let n = S.countPrefix (isDigit <<< S.singleton) s
-      in SD.Ordered (S.take 1 (S.drop n s))
+      let
+        n = S.countPrefix (isDigit <<< S.singleton) s
+      in
+        SD.Ordered (S.take 1 (S.drop n s))
 
 listItemIndent ∷ String → Int
 listItemIndent s
   | isBulleted s = 1 + min 4 (countLeadingSpaces (S.drop 1 s))
   | otherwise =
-      let n = S.countPrefix (isDigit <<< S.singleton) s
-      in n + 1 + min 4 (countLeadingSpaces (S.drop (n + 1) s))
+      let
+        n = S.countPrefix (isDigit <<< S.singleton) s
+      in
+        n + 1 + min 4 (countLeadingSpaces (S.drop (n + 1) s))
 
 isListItemLine ∷ String → Boolean
 isListItemLine s =
-  let s' = removeNonIndentingSpaces s
-  in isBulleted s' || isOrderedListMarker s'
+  let
+    s' = removeNonIndentingSpaces s
+  in
+    isBulleted s' || isOrderedListMarker s'
 
 isIndentedTo ∷ Int → String → Boolean
 isIndentedTo n s = countLeadingSpaces s >= n
@@ -171,9 +192,9 @@ splitListItem
   ∷ String
   → L.List String
   → { listType ∷ SD.ListType
-     , listItemLines ∷ L.List String
-     , otherLines ∷ L.List String
-     }
+    , listItemLines ∷ L.List String
+    , otherLines ∷ L.List String
+    }
 splitListItem s ss =
   let
     s1 = removeNonIndentingSpaces s
@@ -208,7 +229,8 @@ splitIndentedChunks ss =
     }
 
 isCodeFence ∷ String → Boolean
-isCodeFence s = isSimpleFence s || (isEvaluatedCode s && isSimpleFence (S.drop 1 s))
+isCodeFence s = isSimpleFence s ||
+  (isEvaluatedCode s && isSimpleFence (S.drop 1 s))
   where
   isSimpleFence s' = S.countPrefix (isFenceChar <<< S.singleton) s' >= 3
 
@@ -231,8 +253,8 @@ splitCodeFence
   → String
   → L.List String
   → { codeLines ∷ L.List String
-     , otherLines ∷ L.List String
-     }
+    , otherLines ∷ L.List String
+    }
 splitCodeFence indent fence ss =
   let
     sp = L.span (not <<< isClosingFence) ss
@@ -243,7 +265,9 @@ splitCodeFence indent fence ss =
     }
   where
   isClosingFence ∷ String → Boolean
-  isClosingFence s = S.countPrefix (\c → S.singleton c == fence) (removeNonIndentingSpaces s) >= 3
+  isClosingFence s =
+    S.countPrefix (\c → S.singleton c == fence) (removeNonIndentingSpaces s) >=
+      3
 
   removeIndentTo ∷ String → String
   removeIndentTo s = S.drop (min indent (countLeadingSpaces s)) s
@@ -264,21 +288,42 @@ parseContainers acc (L.Cons s ss)
   | allChars isSpace s =
       parseContainers (L.Cons CBlank acc) ss
   | isATXHeader (removeNonIndentingSpaces s) =
-      let o = splitATXHeader (removeNonIndentingSpaces s)
-      in parseContainers (L.Cons (CATXHeader o.level o.contents) acc) ss
+      let
+        o = splitATXHeader (removeNonIndentingSpaces s)
+      in
+        parseContainers (L.Cons (CATXHeader o.level o.contents) acc) ss
   | isSetextHeader (removeNonIndentingSpaces (S.trim s)) (L.last acc) =
-      parseContainers (L.Cons (CSetextHeader $ setextLevel (removeNonIndentingSpaces (S.trim s))) acc) ss
+      parseContainers
+        ( L.Cons
+            (CSetextHeader $ setextLevel (removeNonIndentingSpaces (S.trim s)))
+            acc
+        )
+        ss
   | isRule (removeNonIndentingSpaces s) =
       parseContainers (L.Cons CRule acc) ss
   | isBlockquoteLine s =
-      let o = splitBlockquote $ L.Cons s ss
-      in parseContainers (L.Cons (CBlockquote (parseContainers mempty o.blockquoteLines)) acc) o.otherLines
+      let
+        o = splitBlockquote $ L.Cons s ss
+      in
+        parseContainers
+          (L.Cons (CBlockquote (parseContainers mempty o.blockquoteLines)) acc)
+          o.otherLines
   | isListItemLine s =
-      let o = splitListItem s ss
-      in parseContainers (L.Cons (CListItem o.listType $ parseContainers mempty o.listItemLines) acc) o.otherLines
+      let
+        o = splitListItem s ss
+      in
+        parseContainers
+          ( L.Cons
+              (CListItem o.listType $ parseContainers mempty o.listItemLines)
+              acc
+          )
+          o.otherLines
   | isIndentedChunk s =
-      let o = splitIndentedChunks (L.Cons s ss)
-      in parseContainers (L.Cons (CCodeBlockIndented o.codeLines) acc) o.otherLines
+      let
+        o = splitIndentedChunks (L.Cons s ss)
+      in
+        parseContainers (L.Cons (CCodeBlockIndented o.codeLines) acc)
+          o.otherLines
   | isCodeFence (removeNonIndentingSpaces s) =
       let
         s1 = removeNonIndentingSpaces s
@@ -288,7 +333,8 @@ parseContainers acc (L.Cons s ss)
         ch = codeFenceChar s2
         o = splitCodeFence (countLeadingSpaces s) ch ss
       in
-        parseContainers (L.Cons (CCodeBlockFenced eval info o.codeLines) acc) o.otherLines
+        parseContainers (L.Cons (CCodeBlockFenced eval info o.codeLines) acc)
+          o.otherLines
   | isLinkReference (removeNonIndentingSpaces s) =
       let
         s1 = removeNonIndentingSpaces s
@@ -375,7 +421,8 @@ tabsToSpaces = S.replace (S.Pattern "\t") (S.Replacement "    ")
 parseMd ∷ ∀ a. (SD.Value a) ⇒ String → Either String (SD.SlamDownP a)
 parseMd s = map SD.SlamDown bs
   where
-    slashR = URX.unsafeRegex "\\r" RXF.global
-    lines = L.fromFoldable $ S.split (S.Pattern "\n") $ RGX.replace slashR "" $ tabsToSpaces s
-    ctrs = parseContainers mempty lines
-    bs = parseBlocks ctrs
+  slashR = URX.unsafeRegex "\\r" RXF.global
+  lines = L.fromFoldable $ S.split (S.Pattern "\n") $ RGX.replace slashR "" $
+    tabsToSpaces s
+  ctrs = parseContainers mempty lines
+  bs = parseBlocks ctrs

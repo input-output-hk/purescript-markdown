@@ -22,8 +22,17 @@ import Data.Maybe as M
 import Data.Newtype (unwrap)
 import Data.Ord (class Ord1, compare1)
 import Data.Traversable as TR
-import Text.Markdown.SlamDown.Syntax.TextBox (TextBox(..), TimePrecision(..), transTextBox, traverseTextBox) as TB
-import Text.Markdown.SlamDown.Syntax.Value (class Value, renderValue, stringValue) as Value
+import Text.Markdown.SlamDown.Syntax.TextBox
+  ( TextBox(..)
+  , TimePrecision(..)
+  , transTextBox
+  , traverseTextBox
+  ) as TB
+import Text.Markdown.SlamDown.Syntax.Value
+  ( class Value
+  , renderValue
+  , stringValue
+  ) as Value
 
 data FormFieldP f a
   = TextBox (TB.TextBox (Compose M.Maybe f))
@@ -37,7 +46,7 @@ transFormField
   ∷ ∀ f g
   . (f ~> g)
   → FormFieldP f
-  ~> FormFieldP g
+      ~> FormFieldP g
 transFormField eta =
   unwrap <<<
     traverseFormField (eta >>> Identity)
@@ -50,7 +59,9 @@ traverseFormField
   → h (FormFieldP g a)
 traverseFormField eta field =
   case field of
-    TextBox tb → TextBox <$> TB.traverseTextBox (unwrap >>> TR.traverse eta >>> map Compose) tb
+    TextBox tb → TextBox <$> TB.traverseTextBox
+      (unwrap >>> TR.traverse eta >>> map Compose)
+      tb
     RadioButtons sel ls → RadioButtons <$> eta sel <*> eta ls
     CheckBoxes sel ls → CheckBoxes <$> eta sel <*> eta ls
     DropDown sel ls → DropDown <$> TR.traverse eta sel <*> eta ls
@@ -63,24 +74,33 @@ instance functorFormField ∷ (Functor f) ⇒ Functor (FormFieldP f) where
       CheckBoxes sel ls → CheckBoxes (map f <$> sel) (map f <$> ls)
       DropDown sel ls → DropDown (map f <$> sel) (map f <$> ls)
 
-instance showFormField ∷ (Functor f, Show (f a), Show (TB.TextBox (Compose M.Maybe f)), Show (f (L.List a))) ⇒ Show (FormFieldP f a) where
+instance showFormField ∷
+  ( Functor f
+  , Show (f a)
+  , Show (TB.TextBox (Compose M.Maybe f))
+  , Show (f (L.List a))
+  ) ⇒
+  Show (FormFieldP f a) where
   show =
     case _ of
       TextBox tb → "(TextBox " <> show tb <> ")"
-      RadioButtons sel ls → "(RadioButtons " <> show sel <> " " <> show ls <> ")"
+      RadioButtons sel ls → "(RadioButtons " <> show sel <> " " <> show ls <>
+        ")"
       CheckBoxes sel ls → "(CheckBoxes " <> show sel <> " " <> show ls <> ")"
       DropDown sel ls → "(DropDown " <> show sel <> " " <> show ls <> ")"
 
 instance eq1FormField ∷ Eq1 f ⇒ Eq1 (FormFieldP f) where
   eq1 = case _, _ of
-    TextBox tb1, TextBox tb2 -> tb1 == tb2
-    RadioButtons sel1 ls1, RadioButtons sel2 ls2 -> sel1 `eq1` sel2 && ls1 `eq1` ls2
-    CheckBoxes sel1 ls1, CheckBoxes sel2 ls2 -> sel1 `eq1` sel2 && ls1 `eq1` ls2
-    DropDown M.Nothing ls1, DropDown M.Nothing ls2 -> ls1 `eq1` ls2
-    DropDown (M.Just sel1) ls1, DropDown (M.Just sel2) ls2 -> sel1 `eq1` sel2 && ls1 `eq1` ls2
-    _, _ -> false
+    TextBox tb1, TextBox tb2 → tb1 == tb2
+    RadioButtons sel1 ls1, RadioButtons sel2 ls2 → sel1 `eq1` sel2 && ls1 `eq1`
+      ls2
+    CheckBoxes sel1 ls1, CheckBoxes sel2 ls2 → sel1 `eq1` sel2 && ls1 `eq1` ls2
+    DropDown M.Nothing ls1, DropDown M.Nothing ls2 → ls1 `eq1` ls2
+    DropDown (M.Just sel1) ls1, DropDown (M.Just sel2) ls2 → sel1 `eq1` sel2 &&
+      ls1 `eq1` ls2
+    _, _ → false
 
-instance eqFormField :: (Eq1 f, Eq a) => Eq (FormFieldP f a) where
+instance eqFormField ∷ (Eq1 f, Eq a) ⇒ Eq (FormFieldP f a) where
   eq = eq1
 
 instance ord1FormField ∷ Ord1 f ⇒ Ord1 (FormFieldP f) where
@@ -90,19 +110,23 @@ instance ord1FormField ∷ Ord1 f ⇒ Ord1 (FormFieldP f) where
       TextBox _, _ → LT
       _, TextBox _ → GT
 
-      RadioButtons sel1 ls1, RadioButtons sel2 ls2 → compare1 sel1 sel2 <> compare1 ls1 ls2
+      RadioButtons sel1 ls1, RadioButtons sel2 ls2 → compare1 sel1 sel2 <>
+        compare1 ls1 ls2
       RadioButtons _ _, _ → LT
       _, RadioButtons _ _ → GT
 
-      CheckBoxes sel1 ls1, CheckBoxes sel2 ls2 → compare1 sel1 sel2 <> compare1 ls1 ls2
+      CheckBoxes sel1 ls1, CheckBoxes sel2 ls2 → compare1 sel1 sel2 <> compare1
+        ls1
+        ls2
       CheckBoxes _ _, _ → LT
       _, CheckBoxes _ _ → GT
 
       DropDown M.Nothing ls1, DropDown M.Nothing ls2 → compare1 ls1 ls2
-      DropDown (M.Just sel1) ls1, DropDown (M.Just sel2) ls2 → compare1 sel1 sel2 <> compare1 ls1 ls2
-      _, _ -> EQ
+      DropDown (M.Just sel1) ls1, DropDown (M.Just sel2) ls2 →
+        compare1 sel1 sel2 <> compare1 ls1 ls2
+      _, _ → EQ
 
-instance ordFormField :: (Ord1 f, Ord a) => Ord (FormFieldP f a) where
+instance ordFormField ∷ (Ord1 f, Ord a) ⇒ Ord (FormFieldP f a) where
   compare = compare1
 
 newtype ArbIdentity a = ArbIdentity a
@@ -111,7 +135,7 @@ instance functorArbIdentity ∷ Functor ArbIdentity where
   map f (ArbIdentity x) =
     ArbIdentity $ f x
 
-newtype ArbCompose :: forall j k. (j -> Type) -> (k -> j) -> k -> Type
+newtype ArbCompose ∷ ∀ j k. (j → Type) → (k → j) → k → Type
 newtype ArbCompose f g a = ArbCompose (f (g a))
 
 instance functorArbCompose ∷ (Functor f, Functor g) ⇒ Functor (ArbCompose f g) where

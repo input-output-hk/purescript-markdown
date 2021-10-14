@@ -28,7 +28,9 @@ isEmailAddress ∷ String → Boolean
 isEmailAddress = R.test wsEmail
   where
   wsEmail ∷ R.Regex
-  wsEmail = RU.unsafeRegex """^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$""" RF.noFlags
+  wsEmail = RU.unsafeRegex
+    """^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"""
+    RF.noFlags
 
 parens ∷ ∀ a. Parser String a → Parser String a
 parens p = string "(" *> skipSpaces *> p <* skipSpaces <* string ")"

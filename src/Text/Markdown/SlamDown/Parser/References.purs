@@ -18,7 +18,8 @@ import Text.Markdown.SlamDown.Parser.Utils as PU
 import Text.Markdown.SlamDown.Syntax as SD
 
 parseLinkReference ∷ ∀ a. String → M.Maybe (SD.Block a)
-parseLinkReference = E.either (const M.Nothing) M.Just <<< flip P.runParser linkReference
+parseLinkReference = E.either (const M.Nothing) M.Just <<< flip P.runParser
+  linkReference
 
 linkReference ∷ ∀ a. P.Parser String (SD.Block a)
 linkReference = do
@@ -33,7 +34,7 @@ linkReference = do
   pure $ SD.LinkReference l uri
 
   where
-    charsToString =
-      S.trim
-        <<< S.fromCharArray
-        <<< A.fromFoldable
+  charsToString =
+    S.trim
+      <<< S.fromCharArray
+      <<< A.fromFoldable

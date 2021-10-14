@@ -12,8 +12,27 @@ import Prelude
 import Data.Eq (class Eq1)
 import Data.List as L
 import Data.Ord (class Ord1)
-import Text.Markdown.SlamDown.Syntax.Block (Block(..), CodeBlockType(..), ListType(..)) as SDB
-import Text.Markdown.SlamDown.Syntax.FormField (class Value, Expr(..), FormField, FormFieldP(..), TextBox(..), TimePrecision(..), getLiteral, getUnevaluated, renderValue, stringValue, transFormField, transTextBox, traverseFormField, traverseTextBox) as SDF
+import Text.Markdown.SlamDown.Syntax.Block
+  ( Block(..)
+  , CodeBlockType(..)
+  , ListType(..)
+  ) as SDB
+import Text.Markdown.SlamDown.Syntax.FormField
+  ( class Value
+  , Expr(..)
+  , FormField
+  , FormFieldP(..)
+  , TextBox(..)
+  , TimePrecision(..)
+  , getLiteral
+  , getUnevaluated
+  , renderValue
+  , stringValue
+  , transFormField
+  , transTextBox
+  , traverseFormField
+  , traverseTextBox
+  ) as SDF
 import Text.Markdown.SlamDown.Syntax.Inline (Inline(..), LinkTarget(..)) as SDI
 
 -- | `SlamDownP` is the type of SlamDown abstract syntax trees which take values in `a`.
