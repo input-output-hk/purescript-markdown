@@ -1,6 +1,6 @@
 {
   "nodes": {
-    "easy-ps": {
+    "easy-purescript-nix-source": {
       "flake": false,
       "locked": {
         "lastModified": 1631961521,
@@ -69,7 +69,7 @@
     },
     "root": {
       "inputs": {
-        "easy-ps": "easy-ps",
+        "easy-purescript-nix-source": "easy-purescript-nix-source",
         "flake-utils": "flake-utils",
         "gitignore": "gitignore",
         "nixpkgs": "nixpkgs"
