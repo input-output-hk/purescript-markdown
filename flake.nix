@@ -19,10 +19,11 @@
           {
             devShell = pkgs.mkShell {
               buildInputs = with import easy-ps { inherit pkgs; }; [
-                purs
-                spago
-                purty
+                psa
                 purescript-language-server
+                purs
+                purs-tidy
+                spago
               ];
             };
           }

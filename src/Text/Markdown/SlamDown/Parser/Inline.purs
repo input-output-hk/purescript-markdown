@@ -71,12 +71,6 @@ manyOf =
     <<< L.many
     <<< PS.satisfy
 
-isNumeric ∷ Char → Boolean
-isNumeric c =
-  s >= "0" && s <= "9"
-  where
-    s = S.singleton c
-
 dash ∷ P.Parser String Unit
 dash = void $ PS.string "-"
 
@@ -471,7 +465,7 @@ parseTextBox isPlainText eta template =
         M.Just t → pure t
 
     parseNumericValue = do
-      sign ← PC.try (-1 <$ PS.char '-') <|> pure 1
+      sign ← PC.try ("-" <$ PS.char '-') <|> pure ""
       ms ← digits
       PU.skipSpaces
       gotDot ← PC.optionMaybe dot
@@ -484,7 +478,7 @@ parseTextBox isPlainText eta template =
           M.Nothing →
             pure M.Nothing
 
-      HN.fromString (ms <> "." <> M.fromMaybe "" ns)
+      HN.fromString (sign <> ms <> "." <> M.fromMaybe "" ns)
         # M.maybe (P.fail "Failed parsing decimal") pure
 
     parsePlainTextValue =

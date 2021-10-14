@@ -107,25 +107,12 @@ instance ordFormField :: (Ord1 f, Ord a) => Ord (FormFieldP f a) where
 
 newtype ArbIdentity a = ArbIdentity a
 
-getArbIdentity
-  ∷ ∀ a
-  . ArbIdentity a
-  → Identity a
-getArbIdentity (ArbIdentity x) =
-  Identity x
-
 instance functorArbIdentity ∷ Functor ArbIdentity where
   map f (ArbIdentity x) =
     ArbIdentity $ f x
 
+newtype ArbCompose :: forall j k. (j -> Type) -> (k -> j) -> k -> Type
 newtype ArbCompose f g a = ArbCompose (f (g a))
-
-getArbCompose
-  ∷ ∀ f g a
-  . ArbCompose f g a
-  → Compose f g a
-getArbCompose (ArbCompose x) =
-  Compose x
 
 instance functorArbCompose ∷ (Functor f, Functor g) ⇒ Functor (ArbCompose f g) where
   map f (ArbCompose x) =
