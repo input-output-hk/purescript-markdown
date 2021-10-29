@@ -48,7 +48,14 @@ traverseTextBox eta = case _ of
   Time prec def → Time prec <$> eta def
   DateTime prec def → DateTime prec <$> eta def
 
-instance showTextBox ∷ (Show (f String), Show (f HN.HugeNum), Show (f DT.Time), Show (f DT.Date), Show (f DT.DateTime)) ⇒ Show (TextBox f) where
+instance showTextBox ∷
+  ( Show (f String)
+  , Show (f HN.HugeNum)
+  , Show (f DT.Time)
+  , Show (f DT.Date)
+  , Show (f DT.DateTime)
+  ) ⇒
+  Show (TextBox f) where
   show = case _ of
     PlainText def → "(PlainText " <> show def <> ")"
     Numeric def → "(Numeric " <> show def <> ")"
@@ -58,6 +65,3 @@ instance showTextBox ∷ (Show (f String), Show (f HN.HugeNum), Show (f DT.Time)
 
 derive instance eqTextBox ∷ Eq1 f ⇒ Eq (TextBox f)
 derive instance ordTextBox ∷ Ord1 f ⇒ Ord (TextBox f)
-
-eraseMillis ∷ DT.Time → DT.Time
-eraseMillis (DT.Time h m s _) = DT.Time h m s bottom

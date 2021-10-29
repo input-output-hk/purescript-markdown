@@ -103,7 +103,9 @@ everythingM b i (SD.SlamDown bs) =
   b' x@(SD.Paragraph is) = b x >>= \r → F.foldl (<>) r <$> T.traverse i' is
   b' x@(SD.Header _ is) = b x >>= \r → F.foldl (<>) r <$> T.traverse i' is
   b' x@(SD.Blockquote bs') = b x >>= \r → F.foldl (<>) r <$> T.traverse b' bs'
-  b' x@(SD.Lst _ bss) = b x >>= \r → F.foldl (<>) r <<< join <$> T.traverse (\bs' → T.traverse b' bs') bss
+  b' x@(SD.Lst _ bss) = b x >>= \r → F.foldl (<>) r <<< join <$> T.traverse
+    (\bs' → T.traverse b' bs')
+    bss
   b' x = b x
 
   i' ∷ SD.Inline a → m r

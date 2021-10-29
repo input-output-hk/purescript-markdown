@@ -44,7 +44,8 @@ prettyPrintBlock ∷ ∀ a. (SD.Value a) ⇒ SD.Block a → L.List String
 prettyPrintBlock bl =
   case bl of
     SD.Paragraph is → L.Cons (prettyPrintInlines is) (L.Cons "" L.Nil)
-    SD.Header n is → L.singleton (replicateS n "#" <> " " <> prettyPrintInlines is)
+    SD.Header n is → L.singleton
+      (replicateS n "#" <> " " <> prettyPrintInlines is)
     SD.Blockquote bs → overLines ((<>) "> ") (L.concatMap prettyPrintBlock bs)
     SD.Lst lt bss →
       let
@@ -62,7 +63,8 @@ prettyPrintBlock bl =
         prettyPrintMarker (SD.Ordered s) = "1" <> s
 
         listItem ∷ L.List (SD.Block a) → L.List String
-        listItem = addMarker <<< L.concatMap lines <<< L.concatMap prettyPrintBlock
+        listItem = addMarker <<< L.concatMap lines <<< L.concatMap
+          prettyPrintBlock
       in
         L.concatMap listItem bss
     SD.CodeBlock ct ss →
@@ -79,7 +81,8 @@ prettyPrintBlock bl =
     SD.Rule → L.singleton "***"
 
 prettyPrintInlines ∷ ∀ a. (SD.Value a) ⇒ L.List (SD.Inline a) → String
-prettyPrintInlines is = S.joinWith "" $ A.fromFoldable $ (map prettyPrintInline is)
+prettyPrintInlines is = S.joinWith "" $ A.fromFoldable $
+  (map prettyPrintInline is)
 
 prettyPrintInline ∷ ∀ a. (SD.Value a) ⇒ SD.Inline a → String
 prettyPrintInline il =
@@ -100,25 +103,26 @@ prettyPrintInline il =
     SD.Image is url → "![" <> prettyPrintInlines is <> "](" <> url <> ")"
     SD.FormField l r e →
       let
-        star = if r then "*" else" "
+        star = if r then "*" else " "
       in
         esc l <> star <> " = " <> prettyPrintFormElement e
-    where
+  where
 
-      esc s = M.maybe s (const $ "[" <> s <> "]") $ S.indexOf (S.Pattern " ") s
+  esc s = M.maybe s (const $ "[" <> s <> "]") $ S.indexOf (S.Pattern " ") s
 
-      printTarget ∷ SD.LinkTarget → String
-      printTarget (SD.InlineLink url) = parens url
-      printTarget (SD.ReferenceLink tgt) = squares (M.fromMaybe "" tgt)
-
+  printTarget ∷ SD.LinkTarget → String
+  printTarget (SD.InlineLink url) = parens url
+  printTarget (SD.ReferenceLink tgt) = squares (M.fromMaybe "" tgt)
 
 prettyPrintTextBoxValue ∷ SD.TextBox Identity → String
 prettyPrintTextBoxValue t =
   case t of
     SD.PlainText (Identity def) → def
     SD.Numeric (Identity def) →
-      let s = HN.toString def in
-      M.fromMaybe s $ S.stripSuffix (S.Pattern ".") $ HN.toString def
+      let
+        s = HN.toString def
+      in
+        M.fromMaybe s $ S.stripSuffix (S.Pattern ".") $ HN.toString def
     SD.Date (Identity def) → prettyPrintDate def
     SD.Time prec (Identity def) → prettyPrintTime prec def
     SD.DateTime prec (Identity def) → prettyPrintDateTime prec def
@@ -137,8 +141,8 @@ prettyPrintTime prec t =
     <> ":"
     <> printIntPadded 2 (fromEnum $ DT.minute t)
     <> case prec of
-        SD.Seconds -> ":" <> printIntPadded 2 (fromEnum $ DT.second t)
-        _ -> ""
+      SD.Seconds → ":" <> printIntPadded 2 (fromEnum $ DT.second t)
+      _ → ""
 
 prettyPrintDateTime ∷ SD.TimePrecision → DT.DateTime → String
 prettyPrintDateTime prec dt =
@@ -148,38 +152,38 @@ prettyPrintDateTime prec dt =
 
 printIntPadded ∷ Int → Int → String
 printIntPadded l i =
-  if dl > 0
-  then S.fromCharArray (U.replicate dl '0') <> s
+  if dl > 0 then S.fromCharArray (U.replicate dl '0') <> s
   else s
   where
-    s = show i
-    dl = l - S.length s
+  s = show i
+  dl = l - S.length s
 
 prettyPrintTextBox ∷ SD.TextBox (Compose M.Maybe SD.Expr) → String
 prettyPrintTextBox t =
   prettyPrintTemplate t
-    <> M.maybe "" (\x → " (" <> prettyPrintDefault x <> ")") (SD.traverseTextBox unwrap t)
+    <> M.maybe "" (\x → " (" <> prettyPrintDefault x <> ")")
+      (SD.traverseTextBox unwrap t)
   where
-    prettyPrintTemplate ∷ ∀ f. SD.TextBox f → String
-    prettyPrintTemplate =
-      case _ of
-        SD.PlainText _ → "______"
-        SD.Numeric _ → "#______"
-        SD.Date _ → "__-__-____"
-        SD.Time SD.Minutes _ → "__:__"
-        SD.Time SD.Seconds _ → "__:__:__"
-        SD.DateTime SD.Minutes _ → "__-__-____ __:__"
-        SD.DateTime SD.Seconds _ → "__-__-____ __:__:__"
+  prettyPrintTemplate ∷ ∀ f. SD.TextBox f → String
+  prettyPrintTemplate =
+    case _ of
+      SD.PlainText _ → "______"
+      SD.Numeric _ → "#______"
+      SD.Date _ → "__-__-____"
+      SD.Time SD.Minutes _ → "__:__"
+      SD.Time SD.Seconds _ → "__:__:__"
+      SD.DateTime SD.Minutes _ → "__-__-____ __:__"
+      SD.DateTime SD.Seconds _ → "__-__-____ __:__:__"
 
-    prettyPrintDefault ∷ SD.TextBox SD.Expr → String
-    prettyPrintDefault =
-      case _ of
-        SD.PlainText def → prettyPrintExpr identity identity def
-        SD.Numeric def → prettyPrintExpr identity HN.toString def
-        SD.Date def → prettyPrintExpr identity prettyPrintDate def
-        SD.Time prec def → prettyPrintExpr identity (prettyPrintTime prec) def
-        SD.DateTime prec def → prettyPrintExpr identity (prettyPrintDateTime prec) def
-
+  prettyPrintDefault ∷ SD.TextBox SD.Expr → String
+  prettyPrintDefault =
+    case _ of
+      SD.PlainText def → prettyPrintExpr identity identity def
+      SD.Numeric def → prettyPrintExpr identity HN.toString def
+      SD.Date def → prettyPrintExpr identity prettyPrintDate def
+      SD.Time prec def → prettyPrintExpr identity (prettyPrintTime prec) def
+      SD.DateTime prec def → prettyPrintExpr identity (prettyPrintDateTime prec)
+        def
 
 prettyPrintFormElement ∷ ∀ a. (SD.Value a) ⇒ SD.FormField a → String
 prettyPrintFormElement el =
@@ -200,7 +204,11 @@ prettyPrintFormElement el =
     SD.CheckBoxes (SD.Unevaluated bs) (SD.Unevaluated ls) →
       "[!`" <> bs <> "`] !`" <> ls <> "`"
     SD.DropDown sel lbls →
-      braces (prettyPrintExpr identity (A.fromFoldable >>> map SD.renderValue >>> S.joinWith ", ") lbls)
+      braces
+        ( prettyPrintExpr identity
+            (A.fromFoldable >>> map SD.renderValue >>> S.joinWith ", ")
+            lbls
+        )
         <> M.maybe "" (parens <<< prettyPrintExpr identity SD.renderValue) sel
     _ → "Unsupported form element"
 

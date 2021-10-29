@@ -37,7 +37,9 @@ instance showInline ∷ (Show a) ⇒ Show (Inline a) where
   show (Code e s) = "(Code " <> show e <> " " <> show s <> ")"
   show (Link is tgt) = "(Link " <> show is <> " " <> show tgt <> ")"
   show (Image is uri) = "(Image " <> show is <> " " <> show uri <> ")"
-  show (FormField l r f) = "(FormField " <> show l <> " " <> show r <> " " <> show f <> ")"
+  show (FormField l r f) = "(FormField " <> show l <> " " <> show r <> " "
+    <> show f
+    <> ")"
 
 derive instance eqInline ∷ Eq a ⇒ Eq (Inline a)
 derive instance eq1Inline ∷ Eq1 Inline
