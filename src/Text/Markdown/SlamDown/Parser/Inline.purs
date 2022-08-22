@@ -30,9 +30,10 @@ import Data.Tuple (Tuple(..), fst, snd)
 import Data.Validation.Semigroup as V
 import Text.Markdown.SlamDown.Parser.Utils as PU
 import Text.Markdown.SlamDown.Syntax as SD
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
+import Parsing as P
+import Parsing.Combinators as PC
+import Parsing.String as PS
+import Parsing.String.Basic as PS
 
 parseInlines
   ∷ ∀ a
