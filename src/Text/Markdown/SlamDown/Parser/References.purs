@@ -10,12 +10,12 @@ import Data.Maybe as M
 import Data.String (trim) as S
 import Data.String.CodeUnits (fromCharArray) as S
 
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
-
 import Text.Markdown.SlamDown.Parser.Utils as PU
 import Text.Markdown.SlamDown.Syntax as SD
+
+import Parsing as P
+import Parsing.Combinators as PC
+import Parsing.String as PS
 
 parseLinkReference ∷ ∀ a. String → M.Maybe (SD.Block a)
 parseLinkReference = E.either (const M.Nothing) M.Just <<< flip P.runParser

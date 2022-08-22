@@ -14,9 +14,9 @@ import Data.String.Regex as R
 import Data.String.Regex.Flags as RF
 import Data.String.Regex.Unsafe as RU
 
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (skipMany)
-import Text.Parsing.Parser.String (string, satisfy)
+import Parsing (Parser)
+import Parsing.Combinators (skipMany)
+import Parsing.String (string, satisfy)
 
 isWhitespace ∷ Char → Boolean
 isWhitespace = R.test wsRegex <<< singleton
